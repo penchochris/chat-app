@@ -1,6 +1,6 @@
 const app = require('http').createServer();
 const io = module.exports.io = require('socket.io')(app);
-const SocketManager = require('./SocketManager');
+const SocketManager = require('./js/SocketManager');
 
 const PORT = process.env.PORT || 3231;
 
