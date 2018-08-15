@@ -1,6 +1,6 @@
 const io = require('../index.js').io;
-const { VERIFY_USER, USER_CONNECTED, LOGOUT } = require('../../js/Events');
-const { createUser, createMessage, createChat } = require('../../js/Factories');
+const { VERIFY_USER, USER_CONNECTED, LOGOUT } = require('../../js/Events.js');
+const { createUser, createMessage, createChat } = require('../../js/Factories.js');
 
 let connectedUsers = {};
 
