@@ -1,8 +1,10 @@
 const io = require('../index.js').io;
-const { VERIFY_USER, USER_CONNECTED, LOGOUT } = require('../../js/Events.js');
+const { VERIFY_USER, USER_CONNECTED, LOGOUT, COMMUNITY_CHAT } = require('../../js/Events.js');
 const { createUser, createMessage, createChat } = require('../../js/Factories.js');
 
 let connectedUsers = {};
+
+let communityChat = createChat();
 
 const isUser = (userList, username) => {
   return username in userList;
@@ -37,6 +39,12 @@ const verifyUser = (socket) => {
   })
 }
 
+const createChats = (socket) => {
+  socket.on(COMMUNITY_CHAT, (callback) => { 
+    callback(communityChat); 
+  });
+}
+
 connectWithUsername = (socket) => {
   socket.on(USER_CONNECTED, (user) => {
     connectedUsers = addUser(connectedUsers, user);
@@ -50,5 +58,6 @@ connectWithUsername = (socket) => {
 module.exports = function (socket) {
   console.log(`Socket Id: ${socket.id}`);
   verifyUser(socket);
+  createChats(socket);
   connectWithUsername(socket);
 }

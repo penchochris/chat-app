@@ -6,7 +6,7 @@ export default class SideBar extends Component {
 		return (
 			<div id="side-bar">
 					<div className="heading">
-						<div className="app-name">My Chat <img src="https://png.icons8.com/android/16/000000/expand-arrow.png"/></div>
+						<div className="app-name">My Chat<img src="https://png.icons8.com/android/16/000000/expand-arrow.png"/></div>
 						<div className="menu">
 							<img src="https://png.icons8.com/ios-glyphs/24/000000/menu.png"/>
 						</div>
@@ -30,7 +30,8 @@ export default class SideBar extends Component {
 								const user = chat.users.find(({name})=>{
 									return name !== this.props.name
 								}) || { name:"Community" }
-								const classNames = (activeChat && activeChat.id === chat.id) ? 'active' : ''
+								const classNames = (activeChat && activeChat.id === chat.id) ? 'active' : '';
+								
 								return(
 								<div 
 									key={chat.id} 
