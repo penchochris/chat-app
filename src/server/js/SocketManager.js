@@ -1,5 +1,5 @@
 const io = require('../index.js').io;
-const { VERIFY_USER, USER_CONNECTED, LOGOUT, COMMUNITY_CHAT } = require('../../js/Events.js');
+const { VERIFY_USER, USER_CONNECTED, LOGOUT, COMMUNITY_CHAT, USER_DISCONNECTED } = require('../../js/Events.js');
 const { createUser, createMessage, createChat } = require('../../js/Factories.js');
 
 let connectedUsers = {};
@@ -39,25 +39,46 @@ const verifyUser = (socket) => {
   })
 }
 
-const createChats = (socket) => {
+const sendMessageToChat = (sender) => {
+  return (chatId, message) => {
+    io.emit(`${MESSAGE_RECIEVED}-${chatId}`, createMessage({message, sender}))
+  }
+} 
+
+const createCommunityChat = (socket) => {
   socket.on(COMMUNITY_CHAT, (callback) => { 
     callback(communityChat); 
   });
 }
 
-connectWithUsername = (socket) => {
+const userConnects = (socket) => {
   socket.on(USER_CONNECTED, (user) => {
     connectedUsers = addUser(connectedUsers, user);
     socket.user = user;
 
+    sendMessageToChatFromUser = sendMessageToChat(user.name);
+
     io.emit(USER_CONNECTED, connectedUsers);
-    console.log(connectedUsers);
+    console.log('Connected:', connectedUsers);
+  });
+}
+
+const userDisconnects = (socket, event) => {
+  socket.on(event, () => {
+    if('user' in socket) {
+      connectedUsers = removeUser(connectedUsers, socket.user.name);
+
+      io.emit(USER_DISCONNECTED, connectedUsers);
+      console.log('Disconnected:', connectedUsers);
+    }
   });
 }
 
 module.exports = function (socket) {
   console.log(`Socket Id: ${socket.id}`);
   verifyUser(socket);
-  createChats(socket);
-  connectWithUsername(socket);
+  createCommunityChat(socket);
+  userConnects(socket);
+  userDisconnects(socket, 'disconnect');
+  userDisconnects(socket, LOGOUT);
 }
