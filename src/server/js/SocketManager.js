@@ -1,9 +1,8 @@
 const io = require('../index.js').io;
-const { VERIFY_USER, USER_CONNECTED, LOGOUT, COMMUNITY_CHAT, USER_DISCONNECTED } = require('../../js/Events.js');
+const { VERIFY_USER, USER_CONNECTED, LOGOUT, COMMUNITY_CHAT, USER_DISCONNECTED, MESSAGE_RECIEVED, MESSAGE_SENT, TYPING } = require('../../js/Events.js');
 const { createUser, createMessage, createChat } = require('../../js/Factories.js');
 
 let connectedUsers = {};
-
 let communityChat = createChat();
 
 const isUser = (userList, username) => {
@@ -22,45 +21,16 @@ const addUser = (userList, user) => {
   return newList;
 }
 
-const verifyUser = (socket) => {
-  socket.on(VERIFY_USER, (nickname, callback) => {
-    if (isUser(connectedUsers, nickname)) {
-      callback({
-        isUser: true,
-        user: null
-      })
-    } else {
-      callback({
-        isUser: false,
-        user:createUser({name:nickname})
-      })
-    }
-
-  })
+const sendTypingToChat = (user) => {
+  return (chatId, isTyping) => {
+    io.emit(`${TYPING}-${chatId}`, {user, isTyping});
+  }
 }
 
 const sendMessageToChat = (sender) => {
   return (chatId, message) => {
     io.emit(`${MESSAGE_RECIEVED}-${chatId}`, createMessage({message, sender}))
   }
-} 
-
-const createCommunityChat = (socket) => {
-  socket.on(COMMUNITY_CHAT, (callback) => { 
-    callback(communityChat); 
-  });
-}
-
-const userConnects = (socket) => {
-  socket.on(USER_CONNECTED, (user) => {
-    connectedUsers = addUser(connectedUsers, user);
-    socket.user = user;
-
-    sendMessageToChatFromUser = sendMessageToChat(user.name);
-
-    io.emit(USER_CONNECTED, connectedUsers);
-    console.log('Connected:', connectedUsers);
-  });
 }
 
 const userDisconnects = (socket, event) => {
@@ -76,9 +46,53 @@ const userDisconnects = (socket, event) => {
 
 module.exports = function (socket) {
   console.log(`Socket Id: ${socket.id}`);
-  verifyUser(socket);
-  createCommunityChat(socket);
-  userConnects(socket);
+
+  let sendMessageToChatFromUser;
+  let sendTypingFromUser;
+
+  //Verify users
+  socket.on(VERIFY_USER, (nickname, callback) => {
+    if (isUser(connectedUsers, nickname)) {
+      callback({
+        isUser: true,
+        user: null
+      })
+    } else {
+      callback({
+        isUser: false,
+        user:createUser({name:nickname})
+      })
+    }
+  })
+
+  // Creates community chat
+  socket.on(COMMUNITY_CHAT, (callback) => { 
+    callback(communityChat); 
+  });
+
+  //user connects
+  socket.on(USER_CONNECTED, (user) => {
+    connectedUsers = addUser(connectedUsers, user);
+    socket.user = user;
+
+    sendMessageToChatFromUser = sendMessageToChat(user.name);
+    sendTypingFromUser = sendTypingToChat(user.name);
+
+    io.emit(USER_CONNECTED, connectedUsers);
+    console.log('Connected:', connectedUsers);
+  });
+
+  //User disconects
   userDisconnects(socket, 'disconnect');
   userDisconnects(socket, LOGOUT);
+
+  // Message sent
+  socket.on(MESSAGE_SENT, ({chatId, message}) => {
+    sendMessageToChatFromUser(chatId, message);
+  })
+
+  //Typing
+  socket.on(TYPING, ({chatId, isTyping}) => {
+    sendTypingFromUser(chatId, isTyping);
+  })
 }
