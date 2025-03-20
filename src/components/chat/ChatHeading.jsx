@@ -9,9 +9,6 @@ export default function({name, numberOfUsers}) {
             <div className="indicator"></div>
             <span>{numberOfUsers ? numberOfUsers : null}</span>
           </div>
-          <div className="options">
-            3 ICONS HERE
-          </div>
         </div>
       </div>
     );

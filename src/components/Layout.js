@@ -4,7 +4,7 @@ import { USER_CONNECTED, LOGOUT } from '../js/Events';
 import LoginForm from './LoginForm';
 import ChatContainer from './chat/ChatContainer';
 
-const socketUrl = "http://192.168.1.3:3231";
+const socketUrl = "http://localhost:3231";
 
 export default class Layout extends Component {
   
@@ -21,6 +21,9 @@ export default class Layout extends Component {
 
     socket.on('connect', () => {
       console.log('connected!');
+    })
+    socket.on(USER_CONNECTED, (connectedUsers)=> {
+      this.setState({connectedUsers: connectedUsers})
     })
     this.setState({socket});
   }
