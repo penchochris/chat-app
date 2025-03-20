@@ -56,6 +56,7 @@ export default class ChatContainer extends Component {
   addMessageToChat = (chatId) => {
     return (message) => {
       const { chats } = this.state;
+
       console.log(chats);
       let newChats = chats.map((chat) => {
         chat.id === chatId && chat.messages.push(message);
@@ -73,8 +74,9 @@ export default class ChatContainer extends Component {
   }
 
   render() {
-    const { user, logout } = this.props;
+    const { user, logout, connectedUsers } = this.props;
     const { chats, activeChat } = this.state;
+
     return (
       <div className="container">
         <SideBar
@@ -83,6 +85,7 @@ export default class ChatContainer extends Component {
           user={user}
           activeChat={activeChat}
           setActiveChat={this.setActiveChat}
+          connectedUsers={connectedUsers}
         />
         <div className="chat-room-container">
           {activeChat !== null ? (
